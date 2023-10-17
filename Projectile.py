@@ -5,7 +5,7 @@ class Projectile:
         self.x = x
         self.y = y
         self.img = img
-        self.vel = 1
+        self.vel = 10
         self.l = l
         self.h = h
         self.img = pygame.transform.scale(img, (l, h))
