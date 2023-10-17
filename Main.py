@@ -1,6 +1,8 @@
 import pygame
+import random
 from Player import Player
 from Projectile import Projectile
+from Enemies import Enemies
 
 clock = pygame.time.Clock()
 
@@ -56,13 +58,15 @@ while running:
         if event.type == pygame.QUIT:
             running = False
 
+        # Checks if the game is over
         if not game_over:
+            # Checks if the player's health is greater than 0 and smaller than 100
             if 100 >= player.health > 0:
                 # Right Arrow Key press creates fireball
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_RIGHT:
                         if not shoot and len(fireballs_right) < 5: # Limits the number of fireballs on the screen to 5
-                            fireballs_right.append(Projectile(500, 380, pygame.image.load("Images/Fireball_right.png"), 100, 70))
+                            fireballs_right.append(Projectile(500, 380, pygame.image.load("Images/Fireball_right.png"), 100, 70, 10))
                             shoot = True
                             player.health -= 5
                 else:
@@ -75,7 +79,7 @@ while running:
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_LEFT:
                         if not shoot and len(fireballs_left) < 5: # Limits the number of fireballs on the screen to 5
-                            fireballs_left.append(Projectile(400, 380, pygame.image.load("Images/Fireball_left.png"), 100, 70))
+                            fireballs_left.append(Projectile(400, 380, pygame.image.load("Images/Fireball_left.png"), 100, 70, 10))
                             shoot = True
                             player.health -= 5
                 else:
@@ -83,6 +87,7 @@ while running:
                         if event.key == pygame.K_LEFT:
                             shoot = False
             
+            # Checks if the player health is 0 or smaller
             elif player.health <= 0:
                 game_over = True
 
@@ -119,6 +124,8 @@ while running:
     if game_over:
         screen.blit(game_over_background, (0, 0)) # Blits the game over background
         screen.blit(game_over_text, game_over_text_rect) # Blits the game over text
+
+    
 
     # Sets the frame rate
     clock.tick(60)        
