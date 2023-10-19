@@ -1,6 +1,7 @@
 import pygame
 import sys
 import random
+import time
 from Player import Player
 from Projectile import Projectile
 from Enemies import Enemies
@@ -71,9 +72,11 @@ quit_button_font = pygame.font.Font(None, 64)
 quit_button_text = quit_button_font.render("Quit", True, (255, 255, 255))
 quit_button_text_rect = quit_button_text.get_rect(center=(500, 425))
 
-
+# Variables of the stopwatch
+stopwatch_font = pygame.font.Font(None, 25)
 
 def main_menu():
+
     while True:
 
         # Blit the Menu Background and Menu Text
@@ -125,12 +128,19 @@ def game():
     fireballs_left = []
     shoot = False #Variable to make sure only one fireball can be created per key press
 
+    start_time = (None)
+    elapsed_time = 0
+
     running = True
     game_over = False
     # Keeps the game running
     while running:
+        
+        
 
         for event in pygame.event.get():
+
+            start_time = time.time()
 
             # Quits the game
             if event.type == pygame.QUIT:
@@ -169,6 +179,12 @@ def game():
                 # Checks if the player health is 0 or smaller
                 elif player.health <= 0:
                     game_over = True
+
+                if running:
+                    elapsed_time += time.time() - start_time
+                    start_time = time.time()
+                stopwatch = stopwatch_font.render(f" {elapsed_time:.2f}", True, (255, 255, 255))
+                screen.blit(stopwatch, (500, 10), 75, 40)
 
         # Draws the background
         screen.blit(background, (0, 0))
