@@ -1,6 +1,7 @@
 import pygame
 import sys
 import random
+import time
 from Player import Player
 from Projectile import Projectile
 from Enemies import Enemies
@@ -124,8 +125,11 @@ def game():
     fireballs_left = []
     shoot = False #Variable to make sure only one fireball can be created per key press
     consume = False
+    font = pygame.font.Font(None, 64)
+    start_time = time.time()
+    elapsed_time = 0
 
-    coal = Items(pygame.image.load("Images/Coal Frame.png"), 120, 120, 0)
+    coal = Items(pygame.image.load("Images/Coal Frame.png"), 120, 120, 100)
 
     running = True
     game_over = False
@@ -133,8 +137,8 @@ def game():
     while running:
 
         coal_font = pygame.font.Font(None, 64)
-        coal_text = coal_font.render("x{CoalAmount}".format(CoalAmount=coal.amount), True, (255, 255, 255))
-        coal_text_rect = coal_text.get_rect(center=(150, 595))
+        coal_text = coal_font.render("x{CoalAmount}".format(CoalAmount=coal.amount), True, (0, 0, 0))
+        coal_text_rect = coal_text.get_rect(center=(135, 595))
 
         for event in pygame.event.get():
 
@@ -194,6 +198,20 @@ def game():
 
         # Draws the background
         screen.blit(background, (0, 0))
+
+        elapsed_time += time.time() - start_time
+        start_time = time.time()
+        # Calculate minutes and seconds
+        minutes, seconds = divmod(elapsed_time, 60)
+
+        # Format the time as a string
+        time_string = f"{minutes:02.0f}:{seconds:05.2f}"
+
+        # Render the text with the formatted time
+        text = font.render(time_string, True, (0, 0, 0))
+        pygame.draw.rect(screen, (0, 0, 0), (418, 5, 200, 50))
+        pygame.draw.rect(screen, (255, 255, 255), (423, 10, 190, 40))
+        screen.blit(text, (430, 10))
         
         # Draws the player
         screen.blit(player.img, (player.x, player.y))
@@ -221,9 +239,11 @@ def game():
         pygame.draw.rect(screen, (0, 255, 0), (health_bar_x, health_bar_y, int(health_bar_length * (player.health / 100)), health_bar_height)) # Draws the top layer of the health bar which scales with player health
         screen.blit(health_bar_text, health_bar_text_rect)
 
-        #pygame.draw.rect(screen, (0, 0, 0), (10, 600, 120, 25))
+        pygame.draw.rect(screen, (0, 0, 0), (31, 560, 160, 70))
+        pygame.draw.rect(screen, (255, 255, 255), (36, 565, 150, 60))
         screen.blit(coal_text, coal_text_rect)
         screen.blit(coal.img, (10, 540))
+        
 
         # Game over screen
         if game_over:
