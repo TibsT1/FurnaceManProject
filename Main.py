@@ -123,12 +123,13 @@ def main_menu():
 def game():
     fireballs_right = []
     fireballs_left = []
+    enemies_right = []
+    enemies_left = []
     shoot = False #Variable to make sure only one fireball can be created per key press
     consume = False
     font = pygame.font.Font(None, 64)
     start_time = time.time()
     elapsed_time = 0
-
     coal = Items(pygame.image.load("Images/Coal Frame.png"), 120, 120, 100)
 
     running = True
@@ -195,7 +196,15 @@ def game():
                 
                 elif player.health > 100:
                     player.health = 100
-
+  # enemies from the left
+                if len(enemies_left) < 3 :
+                    enemies_left.append(Enemies(-20 , 380, pygame.image.load("Images/IceEnemy.png"), 100, 100, 10, 2))
+                    time.sleep (5)
+                    
+                    # enemies from the right
+                if len(enemies_right) < 3 :
+                    enemies_right.append(Enemies(1020, 380, pygame.image.load("Images/IceEnemy_SideRight.png"), 100, 100, 10, 2))
+                    time.sleep (5)
         # Draws the background
         screen.blit(background, (0, 0))
 
@@ -224,6 +233,26 @@ def game():
             # Check for fireball position
             if fireball.x < 0 or fireball.x > SCREEN_WIDTH:
                 fireballs_right.remove(fireball)
+        
+        # spawns the enemy from the left
+        for enemy in enemies_left:
+            enemy.draw(screen)
+            enemy.x += enemy.vel
+            
+            # removes the enemy when it makes contact with player
+            if enemy.x == player.x:
+                player.health -= 5
+                enemies_left.remove(enemy)
+        
+        # spawns the enemy from the right
+        for enemy in enemies_right:
+            enemy.draw(screen)
+            enemy.x += enemy.vel
+            
+            # removes the enemy when it makes contact with player
+            if enemy.x == player.x:
+                player.health -= 5
+                enemies_right.remove(enemy)
 
         # Update and draw fireballs
         for fireball in fireballs_left:
@@ -233,6 +262,12 @@ def game():
             # Check for fireball position
             if fireball.x < -50 or fireball.x > SCREEN_WIDTH:
                 fireballs_left.remove(fireball)
+                
+            if enemy.x == fireball.x:
+                fireballs_left.remove(fireball)
+                enemies_left.remove(enemy)
+
+            
 
         # Draw health bar
         pygame.draw.rect(screen, (255, 0, 0), (health_bar_x, health_bar_y, health_bar_length, health_bar_height)) # Draws the botton layer of the health bar
