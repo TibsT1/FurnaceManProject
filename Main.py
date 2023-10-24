@@ -137,11 +137,13 @@ def game():
     enemies_left = []
     shoot = False #Variable to make sure only one fireball can be created per key press
     consume = False
-    spawn = False
+    spawn_left = False
+    spawn_right = False
     font = pygame.font.Font(None, 64)
     start_time = time.time()
     elapsed_time = 0
     coal = Items(coal_img, 120, 120, 100)
+    score = 0
 
     running = True
     game_over = False
@@ -155,6 +157,10 @@ def game():
         coal_font = pygame.font.Font(None, 64)
         coal_text = coal_font.render("x{CoalAmount}".format(CoalAmount=coal.amount), True, (0, 0, 0))
         coal_text_rect = coal_text.get_rect(center=(135, 595))
+
+        score_font = pygame.font.Font(None, 64)
+        score_text = score_font.render("{Score}".format(Score=score), True, (0, 0, 0))
+        score_text_rect = score_text.get_rect(center=(970, 30))
 
         for event in pygame.event.get():
 
@@ -185,12 +191,12 @@ def game():
             # enemies from the left
             if len(enemies_left) < 3 and event.type == enemy_event:
                 enemies_left.append(enemy_left)
-                spawn = True
+                spawn_left = True
                 
             # enemies from the right
             if len(enemies_right) < 3 and event.type == enemy_event:
                 enemies_right.append(enemy_right)
-                spawn = True
+                spawn_right = True
 
             if 100 > player.health > 0:
                 # Space Key press consumes coal
@@ -234,9 +240,10 @@ def game():
             enemy_left.x += enemy_left.vel
             
             # removes the enemy when it makes contact with player
-            if enemy_left.x == (player.x - 50):
+            if enemy_left.x == (player.x - 50) and spawn_left == True:
                 player.health -= 5
                 enemies_left.remove(enemy_left)
+                spawn_left = False
         
         # spawns the enemy from the right
         for enemy_right in enemies_right:
@@ -244,9 +251,10 @@ def game():
             enemy_right.x -= enemy_right.vel
             
             # removes the enemy when it makes contact with player
-            if enemy_right.x == (player.x + 150):
+            if enemy_right.x == (player.x + 150) and spawn_right == True:
                 player.health -= 5
                 enemies_right.remove(enemy_right)
+                spawn_right = False
 
         # Update and draw fireballs
         for fireball_right in fireballs_right:
@@ -257,10 +265,11 @@ def game():
             if fireball_right.x <= 0 or fireball_right.x >= SCREEN_WIDTH:
                 fireballs_right.remove(fireball_right)
 
-            if enemy_right.x <= fireball_right.x and spawn == True:
+            if enemy_right.x <= fireball_right.x and spawn_right == True:
                 enemies_right.remove(enemy_right)
                 fireballs_right.remove(fireball_right)
-                spawn = False
+                spawn_right = False
+                score += 10
 
         # Update and draw fireballs
         for fireball_left in fireballs_left:
@@ -271,10 +280,11 @@ def game():
             if fireball_left.x <= -10 or fireball_left.x >= SCREEN_WIDTH:
                 fireballs_left.remove(fireball_left)
                 
-            if enemy_left.x >= fireball_left.x and spawn == True:
+            if enemy_left.x >= fireball_left.x and spawn_left == True:
                 enemies_left.remove(enemy_left)
                 fireballs_left.remove(fireball_left)
-                spawn = False
+                spawn_left = False
+                score += 10
 
         # Draw health bar
         pygame.draw.rect(screen, (255, 0, 0), (health_bar_x, health_bar_y, health_bar_length, health_bar_height)) # Draws the botton layer of the health bar
@@ -285,6 +295,8 @@ def game():
         pygame.draw.rect(screen, (255, 255, 255), (36, 565, 150, 60))
         screen.blit(coal_text, coal_text_rect)
         screen.blit(coal.img, (10, 540))
+
+        screen.blit(score_text, score_text_rect)
         
 
         # Game over screen
