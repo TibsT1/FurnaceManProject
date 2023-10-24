@@ -7,14 +7,21 @@ from Projectile import Projectile
 from Enemies import Enemies
 from Items import Items
 
+# Initialising pygame
+pygame.init() 
+
+enemy_interval = 3000 # 3000 milliseconds == 1 second
+enemy_event = pygame.USEREVENT + 1
+pygame.time.set_timer(enemy_event, enemy_interval)
+
 clock = pygame.time.Clock()
+
+def loadimg(imgname):
+    return pygame.image.load(imgname).convert_alpha()
 
 # Variables
 SCREEN_WIDTH = 1000
 SCREEN_HEIGHT = 640
-
-# Initialising pygame
-pygame.init() 
 
 # Creates the surface using the variables assigned
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT)) 
@@ -23,11 +30,14 @@ screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 game_over_background = pygame.Surface(screen.get_size())
 game_over_background.fill((0, 0, 0))
 
-# Assigns the Background Image
-background = pygame.image.load("Images/bg_spaceship_1.png")
-
-# Assigns the Menu Background Image
-menu_background = pygame.image.load("Images/BrickBackground.jpg")
+# Loading images
+background = pygame.image.load("Images/bg_spaceship_1.png").convert_alpha() # Assigns the Background Image
+menu_background = pygame.image.load("Images/BrickBackground.jpg").convert_alpha() # Assigns the Menu Background Image
+fireball_left_img = pygame.image.load("Images/Fireball_left.png").convert_alpha()
+fireball_right_img = pygame.image.load("Images/Fireball_right.png").convert_alpha()
+coal_img = pygame.image.load("Images/Coal Frame.png").convert_alpha()
+ice_enemy_left = pygame.image.load("Images/IceEnemy_Left.png").convert_alpha()
+ice_enemy_right = pygame.image.load("Images/IceEnemy_Right.png").convert_alpha()
 
 # Creates the player
 player = Player(400, 180, pygame.image.load("Images/FurnaceMan.png"), 210, 340, 100)
@@ -127,15 +137,20 @@ def game():
     enemies_left = []
     shoot = False #Variable to make sure only one fireball can be created per key press
     consume = False
+    spawn = False
     font = pygame.font.Font(None, 64)
     start_time = time.time()
     elapsed_time = 0
-    coal = Items(pygame.image.load("Images/Coal Frame.png"), 120, 120, 100)
+    coal = Items(coal_img, 120, 120, 100)
 
     running = True
     game_over = False
     # Keeps the game running
     while running:
+        enemy_left = Enemies(-20 , 380, ice_enemy_left, 100, 100, 10, 2)
+        enemy_right = Enemies(1020, 380, ice_enemy_right, 100, 100, 10, 2)
+        fireball_right = Projectile(500, 380, fireball_right_img, 100, 70, 10)
+        fireball_left = Projectile(400, 380, fireball_left_img, 100, 70, 10)
 
         coal_font = pygame.font.Font(None, 64)
         coal_text = coal_font.render("x{CoalAmount}".format(CoalAmount=coal.amount), True, (0, 0, 0))
@@ -149,62 +164,50 @@ def game():
                 sys.exit()
 
             # Checks if the game is over
-            if not game_over:
-                # Checks if the player's health is greater than 0 and smaller than 100
-                if 100 >= player.health > 0:
-                    # Right Arrow Key press creates fireball
-                    if event.type == pygame.KEYDOWN:
-                        if event.key == pygame.K_RIGHT:
-                            if not shoot and len(fireballs_right) < 5: # Limits the number of fireballs on the screen to 5
-                                fireballs_right.append(Projectile(500, 380, pygame.image.load("Images/Fireball_right.png"), 100, 70, 10))
-                                shoot = True
-                                player.health -= 5
-                    else:
-                        if event.type == pygame.KEYUP:
-                            if event.key == pygame.K_RIGHT:
-                                shoot = False
+            if not game_over and 100 >= player.health > 0:
+                # Right Arrow Key press creates fireball
+                if event.type == pygame.KEYDOWN and event.key == pygame.K_RIGHT and not shoot and len(fireballs_right) < 5:
+                    fireballs_right.append(fireball_right)
+                    shoot = True
+                    player.health -= 5
+                elif event.type == pygame.KEYUP and event.key == pygame.K_RIGHT:
+                    shoot = False
 
 
-                    # Left Arrow Key press creates fireball
-                    if event.type == pygame.KEYDOWN:
-                        if event.key == pygame.K_LEFT:
-                            if not shoot and len(fireballs_left) < 5: # Limits the number of fireballs on the screen to 5
-                                fireballs_left.append(Projectile(400, 380, pygame.image.load("Images/Fireball_left.png"), 100, 70, 10))
-                                shoot = True
-                                player.health -= 5
-                    else:
-                        if event.type == pygame.KEYUP:
-                            if event.key == pygame.K_LEFT:
-                                shoot = False
-
-                if 100 > player.health > 0:
-                    # Space Key press consumes coal
-                    if event.type == pygame.KEYDOWN:
-                        if event.key == pygame.K_SPACE:
-                            if not consume and coal.amount > 0:
-                                coal.amount -= 1
-                                player.health += 20
-                                consume = True
-                    else:
-                        if event.type == pygame.KEYUP:
-                            if event.key == pygame.K_SPACE:
-                                consume = False
+                # Left Arrow Key press creates fireball
+                if event.type == pygame.KEYDOWN and event.key == pygame.K_LEFT and not shoot and len(fireballs_left) < 5:
+                    fireballs_left.append(fireball_left)
+                    shoot = True
+                    player.health -= 5
+                elif event.type == pygame.KEYUP and event.key == pygame.K_LEFT:
+                    shoot = False
                 
-                # Checks if the player health is 0 or smaller
-                elif player.health <= 0:
-                    game_over = True
+            # enemies from the left
+            if len(enemies_left) < 3 and event.type == enemy_event:
+                enemies_left.append(enemy_left)
+                spawn = True
                 
-                elif player.health > 100:
-                    player.health = 100
-  # enemies from the left
-                if len(enemies_left) < 3 :
-                    enemies_left.append(Enemies(-20 , 380, pygame.image.load("Images/IceEnemy.png"), 100, 100, 10, 2))
-                    time.sleep (5)
-                    
-                    # enemies from the right
-                if len(enemies_right) < 3 :
-                    enemies_right.append(Enemies(1020, 380, pygame.image.load("Images/IceEnemy_SideRight.png"), 100, 100, 10, 2))
-                    time.sleep (5)
+            # enemies from the right
+            if len(enemies_right) < 3 and event.type == enemy_event:
+                enemies_right.append(enemy_right)
+                spawn = True
+
+            if 100 > player.health > 0:
+                # Space Key press consumes coal
+                if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE and not consume and coal.amount > 0:
+                    coal.amount -= 1
+                    player.health += 20
+                    consume = True
+                elif event.type == pygame.KEYUP and event.key == pygame.K_SPACE:
+                    consume = False
+            
+            # Checks if the player health is 0 or smaller
+            elif player.health <= 0:
+                game_over = True
+            
+            elif player.health > 100:
+                player.health = 100
+        
         # Draws the background
         screen.blit(background, (0, 0))
 
@@ -225,49 +228,53 @@ def game():
         # Draws the player
         screen.blit(player.img, (player.x, player.y))
 
-        # Update and draw fireballs
-        for fireball in fireballs_right:
-            fireball.draw(screen)
-            fireball.x += fireball.vel
-
-            # Check for fireball position
-            if fireball.x < 0 or fireball.x > SCREEN_WIDTH:
-                fireballs_right.remove(fireball)
-        
         # spawns the enemy from the left
-        for enemy in enemies_left:
-            enemy.draw(screen)
-            enemy.x += enemy.vel
+        for enemy_left in enemies_left:
+            enemy_left.draw(screen)
+            enemy_left.x += enemy_left.vel
             
             # removes the enemy when it makes contact with player
-            if enemy.x == player.x:
+            if enemy_left.x == (player.x - 50):
                 player.health -= 5
-                enemies_left.remove(enemy)
+                enemies_left.remove(enemy_left)
         
         # spawns the enemy from the right
-        for enemy in enemies_right:
-            enemy.draw(screen)
-            enemy.x += enemy.vel
+        for enemy_right in enemies_right:
+            enemy_right.draw(screen)
+            enemy_right.x -= enemy_right.vel
             
             # removes the enemy when it makes contact with player
-            if enemy.x == player.x:
+            if enemy_right.x == (player.x + 150):
                 player.health -= 5
-                enemies_right.remove(enemy)
+                enemies_right.remove(enemy_right)
 
         # Update and draw fireballs
-        for fireball in fireballs_left:
-            fireball.draw(screen)
-            fireball.x -= fireball.vel
+        for fireball_right in fireballs_right:
+            fireball_right.draw(screen)
+            fireball_right.x += fireball_right.vel
 
             # Check for fireball position
-            if fireball.x < -50 or fireball.x > SCREEN_WIDTH:
-                fireballs_left.remove(fireball)
-                
-            if enemy.x == fireball.x:
-                fireballs_left.remove(fireball)
-                enemies_left.remove(enemy)
+            if fireball_right.x <= 0 or fireball_right.x >= SCREEN_WIDTH:
+                fireballs_right.remove(fireball_right)
 
-            
+            if enemy_right.x <= fireball_right.x and spawn == True:
+                enemies_right.remove(enemy_right)
+                fireballs_right.remove(fireball_right)
+                spawn = False
+
+        # Update and draw fireballs
+        for fireball_left in fireballs_left:
+            fireball_left.draw(screen)
+            fireball_left.x -= fireball_left.vel
+
+            # Check for fireball position
+            if fireball_left.x <= -10 or fireball_left.x >= SCREEN_WIDTH:
+                fireballs_left.remove(fireball_left)
+                
+            if enemy_left.x >= fireball_left.x and spawn == True:
+                enemies_left.remove(enemy_left)
+                fireballs_left.remove(fireball_left)
+                spawn = False
 
         # Draw health bar
         pygame.draw.rect(screen, (255, 0, 0), (health_bar_x, health_bar_y, health_bar_length, health_bar_height)) # Draws the botton layer of the health bar
