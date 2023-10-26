@@ -10,7 +10,7 @@ from Items import Items
 # Initialising pygame
 pygame.init() 
 
-enemy_interval = 3000 # 3000 milliseconds == 1 second
+enemy_interval = 2000 # 2000 milliseconds == 2 seconds
 enemy_event = pygame.USEREVENT + 1
 pygame.time.set_timer(enemy_event, enemy_interval)
 
@@ -25,6 +25,9 @@ SCREEN_HEIGHT = 640
 
 # Creates the surface using the variables assigned
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT)) 
+
+# Loads the sound effect for the fireball
+fireball_sound_effect = pygame.mixer.Sound("Sounds/fireball_sound.wav")
 
 # Creates a black background for the game over screen
 game_over_background = pygame.Surface(screen.get_size())
@@ -81,6 +84,13 @@ quit_button_font = pygame.font.Font(None, 64)
 quit_button_text = quit_button_font.render("Quit", True, (255, 255, 255))
 quit_button_text_rect = quit_button_text.get_rect(center=(500, 425))
 
+# Loads the background music and makes it loop forever
+def background_music():
+    pygame.mixer.music.load("Sounds/background_music.mp3")
+    pygame.mixer.music.play(-1)
+    pygame.mixer.music.set_volume(0.3)
+
+# Function for the main menu
 def main_menu():
 
     while True:
@@ -130,27 +140,43 @@ def main_menu():
 
         pygame.display.update()
                     
+# Function for the main game
 def game():
+    # Arrays to hold fireballs
     fireballs_right = []
     fireballs_left = []
+
+    # Arrays to hold enemies
     enemies_right = []
     enemies_left = []
+
     shoot = False #Variable to make sure only one fireball can be created per key press
-    consume = False
-    spawn_left = False
-    spawn_right = False
+
+    consume = False #Variable to make sure only one coal can be consumed per key press
+
+    spawn_left = False #Variable to check if the enemy has spawned on the left side
+    spawn_right = False #Variable to check if the enemy has spawned on the right side
+
+    # Timer font, start time and elapsed time
     font = pygame.font.Font(None, 64)
     start_time = time.time()
     elapsed_time = 0
+
+    # Declaring the Coal item
     coal = Items(coal_img, 120, 120, 100)
+
+    # Setting the score to 0 when the game starts
     score = 0
+
+    # Starting the background music
+    background_music()
 
     running = True
     game_over = False
     # Keeps the game running
     while running:
-        enemy_left = Enemies(-20 , 380, ice_enemy_left, 100, 100, 10, 2)
-        enemy_right = Enemies(1020, 380, ice_enemy_right, 100, 100, 10, 2)
+        enemy_left = Enemies(-20 , 380, ice_enemy_left, 100, 100, 10, 5)
+        enemy_right = Enemies(1020, 380, ice_enemy_right, 100, 100, 10, 5)
         fireball_right = Projectile(500, 380, fireball_right_img, 100, 70, 10)
         fireball_left = Projectile(400, 380, fireball_left_img, 100, 70, 10)
 
@@ -159,7 +185,7 @@ def game():
         coal_text_rect = coal_text.get_rect(center=(135, 595))
 
         score_font = pygame.font.Font(None, 64)
-        score_text = score_font.render("{Score}".format(Score=score), True, (0, 0, 0))
+        score_text = score_font.render("{Score}".format(Score=score), True, (255, 255, 255))
         score_text_rect = score_text.get_rect(center=(970, 30))
 
         for event in pygame.event.get():
@@ -172,35 +198,37 @@ def game():
             # Checks if the game is over
             if not game_over and 100 >= player.health > 0:
                 # Right Arrow Key press creates fireball
-                if event.type == pygame.KEYDOWN and event.key == pygame.K_RIGHT and not shoot and len(fireballs_right) < 5:
+                if event.type == pygame.KEYDOWN and event.key == pygame.K_RIGHT and not shoot and len(fireballs_right) < 5 and game_over == False:
                     fireballs_right.append(fireball_right)
                     shoot = True
                     player.health -= 5
+                    pygame.mixer.Sound.play(fireball_sound_effect)
                 elif event.type == pygame.KEYUP and event.key == pygame.K_RIGHT:
                     shoot = False
 
 
                 # Left Arrow Key press creates fireball
-                if event.type == pygame.KEYDOWN and event.key == pygame.K_LEFT and not shoot and len(fireballs_left) < 5:
+                if event.type == pygame.KEYDOWN and event.key == pygame.K_LEFT and not shoot and len(fireballs_left) < 5 and game_over == False:
                     fireballs_left.append(fireball_left)
                     shoot = True
                     player.health -= 5
+                    pygame.mixer.Sound.play(fireball_sound_effect)
                 elif event.type == pygame.KEYUP and event.key == pygame.K_LEFT:
                     shoot = False
                 
             # enemies from the left
-            if len(enemies_left) < 3 and event.type == enemy_event:
+            if len(enemies_left) < 3 and event.type == enemy_event and game_over == False:
                 enemies_left.append(enemy_left)
                 spawn_left = True
                 
             # enemies from the right
-            if len(enemies_right) < 3 and event.type == enemy_event:
+            if len(enemies_right) < 3 and event.type == enemy_event and game_over == False:
                 enemies_right.append(enemy_right)
                 spawn_right = True
 
             if 100 > player.health > 0:
                 # Space Key press consumes coal
-                if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE and not consume and coal.amount > 0:
+                if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE and not consume and coal.amount > 0 and game_over == False:
                     coal.amount -= 1
                     player.health += 20
                     consume = True
@@ -240,7 +268,7 @@ def game():
             enemy_left.x += enemy_left.vel
             
             # removes the enemy when it makes contact with player
-            if enemy_left.x == (player.x - 50) and spawn_left == True:
+            if enemy_left.x == (player.x - 50) and spawn_left == True and game_over == False:
                 player.health -= 5
                 enemies_left.remove(enemy_left)
                 spawn_left = False
@@ -251,7 +279,7 @@ def game():
             enemy_right.x -= enemy_right.vel
             
             # removes the enemy when it makes contact with player
-            if enemy_right.x == (player.x + 150) and spawn_right == True:
+            if enemy_right.x == (player.x + 150) and spawn_right == True and game_over == False:
                 player.health -= 5
                 enemies_right.remove(enemy_right)
                 spawn_right = False
@@ -262,10 +290,10 @@ def game():
             fireball_right.x += fireball_right.vel
 
             # Check for fireball position
-            if fireball_right.x <= 0 or fireball_right.x >= SCREEN_WIDTH:
+            if fireball_right.x <= 0 or fireball_right.x >= SCREEN_WIDTH and game_over == False:
                 fireballs_right.remove(fireball_right)
 
-            if enemy_right.x <= fireball_right.x and spawn_right == True:
+            if enemy_right.x <= fireball_right.x and spawn_right == True and game_over == False:
                 enemies_right.remove(enemy_right)
                 fireballs_right.remove(fireball_right)
                 spawn_right = False
@@ -277,14 +305,17 @@ def game():
             fireball_left.x -= fireball_left.vel
 
             # Check for fireball position
-            if fireball_left.x <= -10 or fireball_left.x >= SCREEN_WIDTH:
+            if fireball_left.x <= -10 or fireball_left.x >= SCREEN_WIDTH and game_over == False:
                 fireballs_left.remove(fireball_left)
                 
-            if enemy_left.x >= fireball_left.x and spawn_left == True:
+            if enemy_left.x >= fireball_left.x and spawn_left == True and game_over == False:
                 enemies_left.remove(enemy_left)
                 fireballs_left.remove(fireball_left)
                 spawn_left = False
                 score += 10
+
+        if score >= 100:
+            score_text_rect = score_text.get_rect(center=(960, 30))
 
         # Draw health bar
         pygame.draw.rect(screen, (255, 0, 0), (health_bar_x, health_bar_y, health_bar_length, health_bar_height)) # Draws the botton layer of the health bar
@@ -303,11 +334,13 @@ def game():
         if game_over:
             screen.blit(game_over_background, (0, 0)) # Blits the game over background
             screen.blit(game_over_text, game_over_text_rect) # Blits the game over text
+            screen.blit(score_text, (440, 400))
+            pygame.mixer.music.stop()
 
         
 
         # Sets the frame rate
-        clock.tick(60)        
+        clock.tick(30)        
 
         pygame.display.update()
 
