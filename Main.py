@@ -39,8 +39,8 @@ menu_background = pygame.image.load("Images/BrickBackground.jpg").convert_alpha(
 fireball_left_img = pygame.image.load("Images/Fireball_left.png").convert_alpha()
 fireball_right_img = pygame.image.load("Images/Fireball_right.png").convert_alpha()
 coal_img = pygame.image.load("Images/Coal Frame.png").convert_alpha()
-ice_enemy_left = pygame.image.load("Images/IceEnemy_Left.png").convert_alpha()
-ice_enemy_right = pygame.image.load("Images/IceEnemy_Right.png").convert_alpha()
+ice_ice_enemy_left = pygame.image.load("Images/Iceice_enemy_left.png").convert_alpha()
+ice_ice_enemy_right = pygame.image.load("Images/Iceice_enemy_right.png").convert_alpha()
 
 # Creates the player
 player = Player(400, 180, pygame.image.load("Images/FurnaceMan.png"), 210, 340, 100)
@@ -171,14 +171,19 @@ def game():
     # Starting the background music
     background_music()
 
+    random_side = True
     running = True
     game_over = False
     # Keeps the game running
     while running:
-        enemy_left = Enemies(-20 , 380, ice_enemy_left, 100, 100, 10, 5)
-        enemy_right = Enemies(1020, 380, ice_enemy_right, 100, 100, 10, 5)
+        ice_enemy_left = Enemies(-20 , 380, ice_enemy_left, 150, 150, 10, 5)
+        ice_enemy_right = Enemies(1020, 380, ice_enemy_right, 150, 150, 10, 5)
         fireball_right = Projectile(500, 380, fireball_right_img, 100, 70, 10)
         fireball_left = Projectile(400, 380, fireball_left_img, 100, 70, 10)
+
+        while random_side == True:
+            side = random.randint(1, 2)
+            break
 
         coal_font = pygame.font.Font(None, 64)
         coal_text = coal_font.render("x{CoalAmount}".format(CoalAmount=coal.amount), True, (0, 0, 0))
@@ -217,13 +222,13 @@ def game():
                     shoot = False
                 
             # enemies from the left
-            if len(enemies_left) < 3 and event.type == enemy_event and game_over == False:
-                enemies_left.append(enemy_left)
+            if len(enemies_left) < 3 and event.type == enemy_event and game_over == False and side == 1:
+                enemies_left.append(ice_enemy_left)
                 spawn_left = True
                 
             # enemies from the right
-            if len(enemies_right) < 3 and event.type == enemy_event and game_over == False:
-                enemies_right.append(enemy_right)
+            if len(enemies_right) < 3 and event.type == enemy_event and game_over == False and side == 2:
+                enemies_right.append(ice_enemy_right)
                 spawn_right = True
 
             if 100 > player.health > 0:
@@ -263,25 +268,25 @@ def game():
         screen.blit(player.img, (player.x, player.y))
 
         # spawns the enemy from the left
-        for enemy_left in enemies_left:
-            enemy_left.draw(screen)
-            enemy_left.x += enemy_left.vel
+        for ice_enemy_left in enemies_left:
+            ice_enemy_left.draw(screen)
+            ice_enemy_left.x += ice_enemy_left.vel
             
             # removes the enemy when it makes contact with player
-            if enemy_left.x == (player.x - 50) and spawn_left == True and game_over == False:
+            if ice_enemy_left.x == (player.x - 50) and spawn_left == True and game_over == False:
                 player.health -= 5
-                enemies_left.remove(enemy_left)
+                enemies_left.remove(ice_enemy_left)
                 spawn_left = False
         
         # spawns the enemy from the right
-        for enemy_right in enemies_right:
-            enemy_right.draw(screen)
-            enemy_right.x -= enemy_right.vel
+        for ice_enemy_right in enemies_right:
+            ice_enemy_right.draw(screen)
+            ice_enemy_right.x -= ice_enemy_right.vel
             
             # removes the enemy when it makes contact with player
-            if enemy_right.x == (player.x + 150) and spawn_right == True and game_over == False:
+            if ice_enemy_right.x == (player.x + 150) and spawn_right == True and game_over == False:
                 player.health -= 5
-                enemies_right.remove(enemy_right)
+                enemies_right.remove(ice_enemy_right)
                 spawn_right = False
 
         # Update and draw fireballs
@@ -293,8 +298,8 @@ def game():
             if fireball_right.x <= 0 or fireball_right.x >= SCREEN_WIDTH and game_over == False:
                 fireballs_right.remove(fireball_right)
 
-            if enemy_right.x <= fireball_right.x and spawn_right == True and game_over == False:
-                enemies_right.remove(enemy_right)
+            if (ice_enemy_right.x - 60) <= fireball_right.x and spawn_right == True and game_over == False:
+                enemies_right.remove(ice_enemy_right)
                 fireballs_right.remove(fireball_right)
                 spawn_right = False
                 score += 10
@@ -308,8 +313,8 @@ def game():
             if fireball_left.x <= -10 or fireball_left.x >= SCREEN_WIDTH and game_over == False:
                 fireballs_left.remove(fireball_left)
                 
-            if enemy_left.x >= fireball_left.x and spawn_left == True and game_over == False:
-                enemies_left.remove(enemy_left)
+            if (ice_enemy_left.x + 100) >= fireball_left.x and spawn_left == True and game_over == False:
+                enemies_left.remove(ice_enemy_left)
                 fireballs_left.remove(fireball_left)
                 spawn_left = False
                 score += 10
