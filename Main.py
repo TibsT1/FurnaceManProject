@@ -10,14 +10,11 @@ from Items import Items
 # Initialising pygame
 pygame.init() 
 
-enemy_interval = 2000 # 2000 milliseconds == 2 seconds
+enemy_interval = 1500 # 1000 milliseconds == 1 seconds
 enemy_event = pygame.USEREVENT + 1
 pygame.time.set_timer(enemy_event, enemy_interval)
 
 clock = pygame.time.Clock()
-
-def loadimg(imgname):
-    return pygame.image.load(imgname).convert_alpha()
 
 # Variables
 SCREEN_WIDTH = 1000
@@ -46,10 +43,10 @@ log_enemy_left_img = pygame.image.load("Images/log_enemy_left.png").convert_alph
 
 
 # Creates the player
-player = Player(400, 180, pygame.image.load("Images/FurnaceMan.png"), 210, 340, 100)
+player = Player(400, 240, pygame.image.load("Images/FurnaceMan.png"), 176.2, 275, 100)
 
 # Changes the name of the window
-pygame.display.set_caption("Furnace Man")
+pygame.display.set_caption("Fornax Ignea")
 
 # Health bar
 health_bar_length = 200
@@ -67,8 +64,13 @@ game_over_text_rect = game_over_text.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_
 
 # Main Menu
 main_menu_font = pygame.font.Font(None, 64)
-main_menu_text = main_menu_font.render("Furnace Man", True, (255, 255, 255))
+main_menu_text = main_menu_font.render("Fornax Ignea", True, (255, 255, 255))
 main_menu_text_rect = main_menu_text.get_rect(center=(SCREEN_WIDTH // 2, 100))
+
+# Controls
+controls_font = pygame.font.Font(None, 64)
+controls_text = controls_font.render("Controls", True, (255, 255, 255))
+controls_text_rect = controls_text.get_rect(center=(SCREEN_WIDTH // 2, 100))
 
 # Buttons
 # Create the Play Button
@@ -87,6 +89,14 @@ quit_button_font = pygame.font.Font(None, 64)
 quit_button_text = quit_button_font.render("Quit", True, (255, 255, 255))
 quit_button_text_rect = quit_button_text.get_rect(center=(500, 425))
 
+# Create the Controls Button
+controls_button = pygame.Rect(400, 300, 200, 50)
+
+# Create the Controls Button Text
+controls_button_font = pygame.font.Font(None, 64)
+controls_button_text = controls_button_font.render("Controls", True, (255, 255, 255))
+controls_button_text_rect = controls_button_text.get_rect(center=(500, 325))
+
 # Loads the background music and makes it loop forever
 def background_music():
     pygame.mixer.music.load("Sounds/background_music.mp3")
@@ -95,7 +105,6 @@ def background_music():
 
 # Function for the main menu
 def main_menu():
-
     while True:
 
         click = False
@@ -133,9 +142,20 @@ def main_menu():
                 pygame.quit()
                 sys.exit()
 
+        # Check if the Controls Button is clicked 
+        if controls_button.collidepoint((mouse_x, mouse_y)):
+            if click: # If the Controls Button is clicked, run the Controls function
+                controls_menu()
+                break
+
+
         # Draws the Play Button Rect and Text
         pygame.draw.rect(screen, (0, 0, 0), play_button)
         screen.blit(play_button_text, play_button_text_rect)
+
+        # Draws the Controls Button Rect and Text
+        pygame.draw.rect(screen, (0, 0, 0), controls_button)
+        screen.blit(controls_button_text, controls_button_text_rect)
 
         # Draws the Quit Button Rect and Text
         pygame.draw.rect(screen, (0, 0, 0), quit_button)
@@ -143,6 +163,21 @@ def main_menu():
 
         pygame.display.update()
                     
+def controls_menu():
+    while True:
+
+        for event in pygame.event.get():
+
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    main_menu()
+
+        screen.blit(menu_background, (0,0))
+        screen.blit(controls_text, controls_text_rect)
+                
 # Function for the main game
 def game():
     # Arrays to hold fireballs
@@ -182,10 +217,10 @@ def game():
     game_over = False
     # Keeps the game running
     while running:
-        log_enemy_left = Enemies(-20 , 380, log_enemy_left_img, 150, 150, 10, 5)
-        log_enemy_right = Enemies(1020, 380, log_enemy_right_img, 150, 150, 10, 5)
-        ice_enemy_left = Enemies(-20 , 380, ice_enemy_left_img, 150, 150, 10, 5)
-        ice_enemy_right = Enemies(1020, 380, ice_enemy_right_img, 150, 150, 10, 5)
+        log_enemy_left = Enemies(-110 , 380, log_enemy_left_img, 150, 150, 20, 5)
+        log_enemy_right = Enemies(1020, 380, log_enemy_right_img, 150, 150, 20, 5)
+        ice_enemy_left = Enemies(-110 , 400, ice_enemy_left_img, 120, 120, 10, 5)
+        ice_enemy_right = Enemies(1020, 400, ice_enemy_right_img, 120, 120, 10, 5)
         fireball_right = Projectile(500, 380, fireball_right_img, 100, 70, 10)
         fireball_left = Projectile(400, 380, fireball_left_img, 100, 70, 10)
 
@@ -215,9 +250,9 @@ def game():
             # Checks if the game is over
             if not game_over and 100 >= player.health > 0:
                 ice_enemy_left.health == 10
-                log_enemy_left.health == 10
+                log_enemy_left.health == 20
                 ice_enemy_right.health == 10
-                log_enemy_right.health == 10
+                log_enemy_right.health == 20
                 # Right Arrow Key press creates fireball
                 if event.type == pygame.KEYDOWN and event.key == pygame.K_RIGHT and not shoot and len(fireballs_right) < 5 and game_over == False:
                     fireballs_right.append(fireball_right)
@@ -299,7 +334,7 @@ def game():
             ice_enemy_left.x += ice_enemy_left.vel
             
             # removes the enemy when it makes contact with player
-            if ice_enemy_left.x == (player.x - 50) and spawn_left == True and game_over == False:
+            if ice_enemy_left.x == (player.x - 123) and spawn_left == True and game_over == False:
                 player.health -= 5
                 ice_enemies_left_list.remove(ice_enemy_left)
                 spawn_left = False
@@ -321,7 +356,7 @@ def game():
             log_enemy_left.x += log_enemy_left.vel
             
             # removes the enemy when it makes contact with player
-            if log_enemy_left.x == (player.x - 50) and spawn_left == True and game_over == False:
+            if log_enemy_left.x == (player.x - 123) and spawn_left == True and game_over == False:
                 player.health -= 5
                 log_enemies_left_list.remove(log_enemy_left)
                 spawn_left = False
@@ -366,7 +401,7 @@ def game():
             fireball_left.x -= fireball_left.vel
 
             # Check for fireball position
-            if fireball_left.x <= -10 or fireball_left.x >= SCREEN_WIDTH and game_over == False:
+            if fireball_left.x <= -70 or fireball_left.x >= SCREEN_WIDTH and game_over == False:
                 fireballs_left.remove(fireball_left)
                 
             if (ice_enemy_left.x + 100) >= fireball_left.x and spawn_left == True and game_over == False:
