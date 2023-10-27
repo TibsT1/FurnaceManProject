@@ -376,7 +376,7 @@ def game():
                 score += 10
 
             if (log_enemy_left.x + 100) >= fireball_left.x and spawn_left == True and game_over == False:
-                log_enemies_right_list.remove(log_enemy_left)
+                log_enemies_left_list.remove(log_enemy_left)
                 log_enemy_left.health -= fireball_left.dmg
                 fireballs_left.remove(fireball_left)
                 score += 10
