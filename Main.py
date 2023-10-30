@@ -40,6 +40,10 @@ ice_enemy_left_img = pygame.image.load("Images/IceEnemy_Left.png").convert_alpha
 ice_enemy_right_img = pygame.image.load("Images/IceEnemy_Right.png").convert_alpha()
 log_enemy_right_img = pygame.image.load("Images/log_enemy_right.png").convert_alpha()
 log_enemy_left_img = pygame.image.load("Images/log_enemy_left.png").convert_alpha()
+left_arrow_key = pygame.image.load("Images/Left_Arrow.png")
+left_arrow_key_big = pygame.transform.rotozoom(left_arrow_key, 0, 1.5)
+right_arrow_key = pygame.image.load("Images/Right_Arrow.png")
+right_arrow_key_big = pygame.transform.rotozoom(right_arrow_key, 0, 1.5)
 
 
 # Creates the player
@@ -177,6 +181,22 @@ def controls_menu():
 
         screen.blit(menu_background, (0,0))
         screen.blit(controls_text, controls_text_rect)
+
+        left_arrow_font = pygame.font.Font(None, 54)
+        left_arrow_text = left_arrow_font.render("Shoot fireball to the left.", True, (255, 255, 255))
+        left_arrow_text_rect = left_arrow_text.get_rect(center=(460, 207))
+
+        right_arrow_font = pygame.font.Font(None, 54)
+        right_arrow_text = right_arrow_font.render("Shoot fireball to the right.", True, (255, 255, 255))
+        right_arrow_text_rect = right_arrow_text.get_rect(center=(475, 310))
+
+        screen.blit(left_arrow_text, left_arrow_text_rect)
+        screen.blit(left_arrow_key_big, (180, 182))
+
+        screen.blit(right_arrow_text, right_arrow_text_rect)
+        screen.blit(right_arrow_key_big, (180, 282))
+
+        pygame.display.update()
                 
 # Function for the main game
 def game():
@@ -334,8 +354,9 @@ def game():
             ice_enemy_left.x += ice_enemy_left.vel
             
             # removes the enemy when it makes contact with player
-            if ice_enemy_left.x == (player.x - 123) and spawn_left == True and game_over == False:
+            if ice_enemy_left.x == player.x and spawn_left == True and game_over == False:
                 player.health -= 5
+                ice_enemy_left.vel == 0
                 ice_enemies_left_list.remove(ice_enemy_left)
                 spawn_left = False
         
@@ -347,6 +368,7 @@ def game():
             # removes the enemy when it makes contact with player
             if ice_enemy_right.x == (player.x + 150) and spawn_right == True and game_over == False:
                 player.health -= 5
+                ice_enemy_right.vel == 0
                 ice_enemies_right_list.remove(ice_enemy_right)
                 spawn_right = False
 
@@ -356,8 +378,9 @@ def game():
             log_enemy_left.x += log_enemy_left.vel
             
             # removes the enemy when it makes contact with player
-            if log_enemy_left.x == (player.x - 123) and spawn_left == True and game_over == False:
+            if log_enemy_left.x == player.x and spawn_left == True and game_over == False:
                 player.health -= 5
+                log_enemy_left.vel == 0
                 log_enemies_left_list.remove(log_enemy_left)
                 spawn_left = False
         
@@ -369,6 +392,7 @@ def game():
             # removes the enemy when it makes contact with player
             if log_enemy_right.x == (player.x + 150) and spawn_right == True and game_over == False:
                 player.health -= 5
+                log_enemy_right.vel == 0
                 log_enemies_right_list.remove(log_enemy_right)
                 spawn_right = False
 
