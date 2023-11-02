@@ -10,10 +10,6 @@ from Items import Items
 # Initialising pygame
 pygame.init() 
 
-enemy_interval = 1500 # 1000 milliseconds == 1 seconds
-enemy_event = pygame.USEREVENT + 1
-pygame.time.set_timer(enemy_event, enemy_interval)
-
 clock = pygame.time.Clock()
 
 # Variables
@@ -143,8 +139,11 @@ def main_menu():
 
         # Check if the Play Button is clicked
         if play_button.collidepoint((mouse_x, mouse_y)):
-            if click: # If the Play Button is clicked, run the Main Game function
-                game()
+            if click: # If the Play Button is clicked, run the Main Game function#
+                try:
+                    game()
+                except Exception:
+                    continue
 
         # Check if the Quit Button is clicked 
         if quit_button.collidepoint((mouse_x, mouse_y)):
@@ -235,7 +234,7 @@ def game_over_func(score, score_amount_text):
             screen.blit(score_amount_text, (460, 420))
         else:
             screen.blit(score_amount_text, (470, 420))
-            pygame.mixer.music.stop()
+        pygame.mixer.music.stop()
 
         screen.blit(back_text, back_text_rect)
         
@@ -243,6 +242,11 @@ def game_over_func(score, score_amount_text):
                 
 # Function for the main game
 def game():
+
+    enemy_interval = 2000 # 1000 milliseconds == 1 seconds
+    enemy_event = pygame.USEREVENT + 1
+    pygame.time.set_timer(enemy_event, enemy_interval)
+
     # Creates the player
     player = Player(400, 240, player_img, 176.2, 275, 100)
 
@@ -456,8 +460,8 @@ def game():
             if (ice_enemy_right.x - 60) <= fireball_right.x and ice_spawn_right == True and game_over == False:
                 ice_enemies_right_list.remove(ice_enemy_right)
                 fireballs_right.remove(fireball_right)
-                ice_spawn_right = False
                 score += 10
+                ice_spawn_right = False
 
             if (log_enemy_right.x - 60) <= fireball_right.x and log_spawn_right == True and game_over == False:
                 log_enemies_right_list.remove(log_enemy_right)
@@ -479,8 +483,8 @@ def game():
             if (ice_enemy_left.x + 100) >= fireball_left.x and ice_spawn_left == True and game_over == False:
                 ice_enemies_left_list.remove(ice_enemy_left)
                 fireballs_left.remove(fireball_left)
-                ice_spawn_left = False
                 score += 10
+                ice_spawn_left = False
 
             if (log_enemy_left.x + 100) >= fireball_left.x and log_spawn_left == True and game_over == False:
                 log_enemies_left_list.remove(log_enemy_left)
@@ -492,6 +496,8 @@ def game():
 
         if score >= 100:
             score_amount_text_rect = score_amount_text.get_rect(center=(960, 30))
+        elif score >= 1000:
+            score_amount_text_rect = score_amount_text.get_rect(center=(970, 30))
 
         # Draw health bar
         pygame.draw.rect(screen, (255, 0, 0), (health_bar_x, health_bar_y, health_bar_length, health_bar_height)) # Draws the botton layer of the health bar
@@ -510,6 +516,7 @@ def game():
             log_enemy_left.vel = 10
             ice_enemy_right.vel = 10
             log_enemy_right.vel = 10
+            enemy_interval = 1000
 
         if elapsed_time >= 60:
             ice_enemy_left.vel = 15
